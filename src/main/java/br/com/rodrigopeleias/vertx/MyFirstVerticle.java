@@ -7,6 +7,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.*;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -26,6 +27,7 @@ public class MyFirstVerticle extends AbstractVerticle{
 	public void start(Future<Void> fut) throws Exception {
 		
 		createSomeWhiskies();
+		
 		Router router = Router.router(vertx);
 		
 		router.route("/").handler(routingContext -> {
@@ -37,21 +39,24 @@ public class MyFirstVerticle extends AbstractVerticle{
 		
 		router.route("/assets/*").handler(StaticHandler.create("assets"));
 		
-		//RESTful API
-		router.route("/api/whiskes*").handler(BodyHandler.create());
+		//RESTful API		
 		router.get("/api/whiskies").handler(this::getAll);
+		router.route("/api/whiskies*").handler(BodyHandler.create());
 		router.post("/api/whiskies").handler(this::addOne);
+		router.get("/api/whiskies/:id").handler(this::getOne);
+		router.put("/api/whiskies/:id").handler(this::updateOne);
 		router.delete("/api/whiskies/:id").handler(this::deleteOne);
 		
 		vertx.createHttpServer()
 		.requestHandler(router::accept)		
-		.listen(config().getInteger("http.port", 8080), 
-		result -> {
-			if (result.succeeded()) {
-				fut.complete();
-			} else {
-				fut.fail(result.cause());
-			}
+		.listen(
+				config().getInteger("http.port", 8080), 
+				result -> {
+					if (result.succeeded()) {
+						fut.complete();
+					} else {
+						fut.fail(result.cause());
+					}
 		});
 	}
 	
@@ -70,6 +75,23 @@ public class MyFirstVerticle extends AbstractVerticle{
 			.end(Json.encodePrettily(whisky));
 	}
 	
+	private void getOne(RoutingContext routingContext) {
+		final String id = routingContext.request().getParam("id");
+		if (id == null) {
+			routingContext.response().setStatusCode(400).end();
+		} else {
+			final Integer idAsInteger = Integer.valueOf(id);
+			Whisky whisky = products.get(idAsInteger);
+			if (whisky == null) {
+				routingContext.response().setStatusCode(400).end();
+			} else {
+				routingContext.response()
+					.putHeader("content-type", "application/json; charset=utf-8")
+					.end(Json.encodePrettily(whisky));
+			}
+		}
+	}
+	
 	private void deleteOne(RoutingContext routingContext) {
 		String id = routingContext.request().getParam("id");
 		if (id == null) {
@@ -79,6 +101,26 @@ public class MyFirstVerticle extends AbstractVerticle{
 			products.remove(idAsInteger);
 		}
 		routingContext.response().setStatusCode(204).end();
+	}
+	
+	private void updateOne(RoutingContext routingContext) {
+		final String id = routingContext.request().getParam("id");
+		JsonObject json = routingContext.getBodyAsJson();
+		if (id == null || json == null) {
+			routingContext.response().setStatusCode(400).end();
+		} else {
+			final Integer idAsInteger = Integer.valueOf(id);
+			Whisky whisky = products.get(idAsInteger);
+			if (whisky == null) {
+				routingContext.response().setStatusCode(400).end();
+			} else {
+				whisky.setName(json.getString("name"));
+				whisky.setOrigin(json.getString("origin"));
+				routingContext.response()
+					.putHeader("content-type", "application;json; charset=utf-8")
+					.end(Json.encodePrettily(whisky));
+			}
+		}
 	}
 
 }
