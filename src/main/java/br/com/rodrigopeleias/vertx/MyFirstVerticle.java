@@ -6,18 +6,12 @@ import io.vertx.core.Future;
 public class MyFirstVerticle extends AbstractVerticle{
 	
 	@Override
-	public void start(Future<Void> fut) throws Exception {
+	public void start() throws Exception {
 		vertx.createHttpServer()
 		.requestHandler(r -> {
-			r.response().end("<h1>Hello from my first Vert.x 3 application </h1>");
+			r.response().end("<h1>Meu primeiro Verticle em Java, especialmente para o Meetup Java :)");
 		})
-		.listen(8080, result -> {
-			if (result.succeeded()) {
-				fut.complete();
-			} else {
-				fut.fail(result.cause());
-			}
-		});
+		.listen(8080);
 	}
 
 }
