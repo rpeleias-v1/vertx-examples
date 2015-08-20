@@ -32,7 +32,7 @@ public class MyFirstVerticleTest {
 		vertx.createHttpClient().getNow(8080, "localhost", "/", 
 		response -> {
 			response.handler(body -> {
-				context.assertTrue(body.toString().contains("Hello"));
+				context.assertTrue(body.toString().contains("Numero gerado"));
 				async.complete();
 			});
 		});		
