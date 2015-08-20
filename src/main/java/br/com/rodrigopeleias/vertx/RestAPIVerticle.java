@@ -1,51 +1,41 @@
 package br.com.rodrigopeleias.vertx;
 
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.*;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.StaticHandler;
-
-public class MyFirstVerticle extends AbstractVerticle{
+public class RestAPIVerticle extends AbstractVerticle{
 	
-	private Map<Integer, Whisky> products = new LinkedHashMap<>();
+	private Map<Integer, Book> books = new LinkedHashMap<>();
 	
-	private void createSomeWhiskies() {
-		Whisky blackLabel = new Whisky("Black Label", "Scotland");
-		Whisky blueLabel = new Whisky("Blue Label", "USA");
-		products.put(blackLabel.getId(), blackLabel);
-		products.put(blueLabel.getId(), blueLabel);
+	private void createSomeBooks() {
+		Book cleanCode = new Book("Clean Code", "Uncle Bob", 500);
+		Book designPatterns = new Book("Design Patterns", "GOF", 600);
+		books.put(cleanCode.getId(), cleanCode);
+		books.put(designPatterns.getId(), designPatterns);
 	}
 	
 	@Override
 	public void start(Future<Void> fut) throws Exception {
 		
-		createSomeWhiskies();
+		createSomeBooks();
 		
 		Router router = Router.router(vertx);
-		
-		router.route("/").handler(routingContext -> {
-			HttpServerResponse response = routingContext.response();
-			response
-				.putHeader("content-type", "text/html")
-				.end("<h1>Hello from my first Vert.x 3 application</h1>");
-		});
-		
-		router.route("/assets/*").handler(StaticHandler.create("assets"));
-		
+				
 		//RESTful API		
-		router.get("/api/whiskies").handler(this::getAll);
-		router.route("/api/whiskies*").handler(BodyHandler.create());
-		router.post("/api/whiskies").handler(this::addOne);
-		router.get("/api/whiskies/:id").handler(this::getOne);
-		router.put("/api/whiskies/:id").handler(this::updateOne);
-		router.delete("/api/whiskies/:id").handler(this::deleteOne);
+		router.get("/api/books").handler(this::getAll);
+		router.route("/api/books*").handler(BodyHandler.create());
+		router.post("/api/books").handler(this::addOne);
+		router.get("/api/books/:id").handler(this::getOne);
+		router.put("/api/books/:id").handler(this::updateOne);
+		router.delete("/api/books/:id").handler(this::deleteOne);
 		
 		vertx.createHttpServer()
 		.requestHandler(router::accept)		
@@ -63,16 +53,16 @@ public class MyFirstVerticle extends AbstractVerticle{
 	private void getAll(RoutingContext routingContext) {
 		routingContext.response()
 			.putHeader("content-type", "application/json; charset=utf-8" )
-			.end(Json.encodePrettily(products.values()));;
+			.end(Json.encodePrettily(books.values()));;
 	}
 	
 	private void addOne(RoutingContext routingContext) {
-		final Whisky whisky = Json.decodeValue(routingContext.getBodyAsString(), Whisky.class);
-		products.put(whisky.getId(), whisky);
+		final Book book = Json.decodeValue(routingContext.getBodyAsString(), Book.class);
+		books.put(book.getId(), book);
 		routingContext.response()
 			.setStatusCode(201)
 			.putHeader("content-type", "application/json; charset=utf-8")
-			.end(Json.encodePrettily(whisky));
+			.end(Json.encodePrettily(book));
 	}
 	
 	private void getOne(RoutingContext routingContext) {
@@ -81,13 +71,13 @@ public class MyFirstVerticle extends AbstractVerticle{
 			routingContext.response().setStatusCode(400).end();
 		} else {
 			final Integer idAsInteger = Integer.valueOf(id);
-			Whisky whisky = products.get(idAsInteger);
-			if (whisky == null) {
+			Book book = books.get(idAsInteger);
+			if (book == null) {
 				routingContext.response().setStatusCode(400).end();
 			} else {
 				routingContext.response()
 					.putHeader("content-type", "application/json; charset=utf-8")
-					.end(Json.encodePrettily(whisky));
+					.end(Json.encodePrettily(book));
 			}
 		}
 	}
@@ -98,7 +88,7 @@ public class MyFirstVerticle extends AbstractVerticle{
 			routingContext.response().setStatusCode(400).end();
 		} else {
 			Integer idAsInteger = Integer.valueOf(id);
-			products.remove(idAsInteger);
+			books.remove(idAsInteger);
 		}
 		routingContext.response().setStatusCode(204).end();
 	}
@@ -110,15 +100,16 @@ public class MyFirstVerticle extends AbstractVerticle{
 			routingContext.response().setStatusCode(400).end();
 		} else {
 			final Integer idAsInteger = Integer.valueOf(id);
-			Whisky whisky = products.get(idAsInteger);
-			if (whisky == null) {
+			Book book = books.get(idAsInteger);
+			if (book == null) {
 				routingContext.response().setStatusCode(400).end();
 			} else {
-				whisky.setName(json.getString("name"));
-				whisky.setOrigin(json.getString("origin"));
+				book.setName(json.getString("name"));
+				book.setAuthor(json.getString("author"));
+				book.setNumberOfPages(json.getInteger("numberOfPages"));
 				routingContext.response()
 					.putHeader("content-type", "application;json; charset=utf-8")
-					.end(Json.encodePrettily(whisky));
+					.end(Json.encodePrettily(book));
 			}
 		}
 	}
