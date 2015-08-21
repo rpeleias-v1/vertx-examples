@@ -20,27 +20,22 @@ public class RestAPIVerticleTest {
 		RestAssured.basePath = "yourbasepath";
 		RestAssured.port = Integer.getInteger("http.port", 8080);
 	}
-	
+
 	@After
 	public void unconfigureRestAssured() {
 		RestAssured.reset();
 	}
-	
+
 	@Test
 	public void checkThatWeCanRetrieveIndividualProduct() {
-		final int id = get("/api/books").then()
-				.assertThat()
-				.statusCode(200)
-				.extract()
-				.jsonPath().getInt("find { it.name=='Clean Code'}.id");
-		get("/api/books/" + id).then()
-			.assertThat()
-			.statusCode(200)
-			.body("name", equalTo("Clean Code"))
-			.body("author", equalTo("Uncle Bob"))
-			.body("id", equalTo(id));
+		final int id = get("/api/books").then().assertThat().statusCode(200)
+				.extract().jsonPath()
+				.getInt("find { it.name=='Clean Code'}.id");
+		get("/api/books/" + id).then().assertThat().statusCode(200)
+				.body("name", equalTo("Clean Code"))
+				.body("author", equalTo("Uncle Bob")).body("id", equalTo(id));
 	}
-	
+
 	@Test
 	public void checkWeCanAddAndDeleteAProduct() {
 		Book book = given()
@@ -49,18 +44,15 @@ public class RestAPIVerticleTest {
 		assertThat(book.getName()).isEqualToIgnoringCase("Clean Code");
 		assertThat(book.getAuthor()).isEqualToIgnoringCase("Uncle Bob");
 		assertThat(book.getId()).isNotZero();
-		
-		get("/api/books/" + book.getId()).then()
-			.assertThat()
-			.statusCode(200)
-			.body("name", equalTo("Jameson"))
-			.body("origin", equalTo("Ireland"))
-			.body("id", equalTo(book.getId()));
-		
-		delete("/api/books/" + book.getId()).then().assertThat().statusCode(200);
-		
-		get("/api/books/" + book.getId()).then()
-			.assertThat()
-			.statusCode(404);
+
+		get("/api/books/" + book.getId()).then().assertThat().statusCode(200)
+				.body("name", equalTo("Jameson"))
+				.body("origin", equalTo("Ireland"))
+				.body("id", equalTo(book.getId()));
+
+		delete("/api/books/" + book.getId()).then().assertThat()
+				.statusCode(200);
+
+		get("/api/books/" + book.getId()).then().assertThat().statusCode(404);
 	}
 }
