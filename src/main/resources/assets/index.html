@@ -40,6 +40,10 @@
 		</div>
 	</div>
 	<script type="text/javascript">
+		$(function () {
+	        load();
+	        initModal();
+	    });
 		function create(name, origin) {
 			$.post("/api/whiskies", JSON.stringify({name: name, origin, origin}), function() {
 				load();
