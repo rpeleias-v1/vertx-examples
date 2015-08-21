@@ -14,7 +14,9 @@ public class MyFirstVerticle extends AbstractVerticle{
 			} else {
 				future.fail("O Verticle para geração de número aleatório falhou");
 			}
-		});							
+		});
+		
+		vertx.deployVerticle(RandomWordVerticle.class.getName());
 	}
 
 }
