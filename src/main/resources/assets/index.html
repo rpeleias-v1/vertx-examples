@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Meus Livros</title>
+
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<div class="container" role="main">
+		<div class="jumbotron">
+			<h1>Meus Livros Prediletos!!</h1>
+
+			<p>Exemplo de CRUD para cadastro de Livros.</p>
+		</div>
+		<div class="page-header">
+			<h1>Meus Livros</h1>
+			<button class="pull-right btn btn-primary product-add"
+				data-action="add" data-toggle="modal" data-target="#productModal">
+				<span class="glyphicon glyphicon-plus"></span> Adicionar Novo Livro
+			</button>
+			<div class="row">
+				<div class="col-md-12">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Nome</th>
+								<th>Autor</th>
+								<th>Número de Páginas</th>
+							</tr>
+						</thead>
+						<tbody id="content">
+							<!-- filled by Ajax Calls -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		$(function () {
+	        load();
+	        initModal();
+	    });
+		function create(name, author, numberOfPages) {
+			$.post("/api/books", JSON.stringify({name: name, author: author, numberOfPages: numberOfPages}), function() {
+				load();
+			}, "json");
+		}
+
+		function remove(id) {
+	        $.ajax({
+	            method: "DELETE",
+	            url: "/api/books/" + id
+	        }).done(function () {
+	            load();
+	        });
+	    }
+
+	    function update(id, name, author, numberOfPages) {
+	        $.ajax({
+	            method: "PUT",
+	            url: "/api/books/" + id,
+	            data: JSON.stringify({name: name, author: author, numberOfPages: numberOfPages})
+	        }).done(function () {
+	            load();
+	        });
+	    }
+
+	    function load() {
+	        $("#content").children().remove();
+	        $.getJSON("/api/books", function (data) {
+	            $.each(data, function (key, val) {
+	                $("<tr><td>" + val.id + "</td><td>" + val.name + "</td><td>" + val.author + "</td><td>" + val.numberOfPages + "</td>" +
+	                        "<td>" +
+	                        "<button data-action='edit' class='btn btn-primary btn-sm product-edit' " +
+	                        "data-toggle='modal' " +
+	                        "data-target='#productModal' " +
+	                        "data-name='" + val.name + "' " +
+	                        "data-author='" + val.author + "' " +
+	                        "data-number-of-pages='" + val.numberOfPages + "' " +
+	                        "data-id='" + val.id + "'>" +
+	                        "<span class='glyphicon glyphicon-pencil'></span>" +
+	                        "</button>" +
+	                        "&nbsp;" +
+	                        "<button class='btn btn-danger btn-sm product-delete' data-id='" + val.id + "'>" +
+	                        "   <span class='glyphicon glyphicon-minus'></span>" +
+	                        "</button>" +
+	                        "</td>" +
+	                        "</tr>").appendTo("#content");
+	            });
+	            initCallbacks();
+	        });
+	    }
+
+	    function initCallbacks() {
+	        $(".product-delete").unbind().click(function() {
+	           var id = $(this).data("id");
+	           remove(id);
+	        });
+	    }
+
+	    function initModal() {
+	        $("#productModal").on('show.bs.modal', function (event) {
+	            var button = $(event.relatedTarget);
+	            var action = button.data('action');
+	            var id = button.data('id');
+	            var productAction = $("#productAction");
+	            productAction.unbind();
+	            var modal = $(this);
+	            if (action === "add") {
+	                modal.find('.modal-title').text("Adicionar novo Livro");
+	                modal.find('#product-name').val("");
+	                modal.find('#product-author').val("");
+	                modal.find('#product-number-of-pages').val("");
+	                productAction.click(function () {
+	                    create($("#product-name").val(), $("#product-author").val(), $("#product-number-of-pages").val());
+	                    $('#productModal').modal('toggle');
+	                });
+	            } else {
+	                modal.find('.modal-title').text("Alterar dados do Livro");
+	                modal.find('#product-name').val(button.data("name"));
+	                modal.find('#product-author').val(button.data("author"));
+	                modal.find('#product-number-of-pages').val(button.data("number-of-pages"));
+	                productAction.click(function () {
+	                    update(id, $("#product-name").val(), $("#product-author").val(), $("#product-number-of-pages").val());
+	                    $('#productModal').modal('toggle');
+	                });
+	            }
+	        })
+	    }
+	</script>
+	<div class="modal fade" id="productModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">
+						<span>&times;</span>
+					</button>
+					<h4 class="modal-title" id="productModalTitle">Adicionar novo Livro</h4>
+				</div>
+				<div class="modal-body">
+					<form>
+						<div class="form-group">
+							<label for="product-name" class="control-label">Nome:</label> <input
+								type="text" class="form-control" id="product-name">
+						</div>
+						<div class="form-group">
+							<label for="product-author" class="control-label">Autor:</label>
+							<input type="text" class="form-control" id="product-author">
+						</div>
+						<div class="form-group">
+							<label for="product-number-of-pages" class="control-label">Número de Páginas:</label>
+							<input type="text" class="form-control" id="product-number-of-pages">
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+					<button type="button" id="productAction" class="btn btn-primary">Salvar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
