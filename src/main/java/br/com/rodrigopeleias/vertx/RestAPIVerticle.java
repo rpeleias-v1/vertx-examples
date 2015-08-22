@@ -49,7 +49,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		router.delete("/api/books/:id").handler(this::deleteOne);
 
 		vertx.createHttpServer().requestHandler(router::accept)
-				.listen(config().getInteger(System.getenv("PORT")), result -> {
+				.listen(config().getInteger(System.getenv("process.env.PORT")), result -> {
 					if (result.succeeded()) {
 						fut.complete();
 					} else {
