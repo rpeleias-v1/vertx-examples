@@ -98,7 +98,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		if (id == null) {
 			routingContext.response().setStatusCode(400).end();
 		} else {
-			Integer idAsInteger = Integer.valueOf(id);
+			Integer idAsInteger = Integer.valueOf(id); 
 			books.remove(idAsInteger);
 		}
 		routingContext.response().setStatusCode(204).end();
