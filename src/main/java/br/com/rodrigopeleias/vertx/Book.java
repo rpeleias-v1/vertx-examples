@@ -5,13 +5,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Book {
 
 	private static final AtomicInteger COUNTER = new AtomicInteger();
-	
+
 	private final int id;
-	
+
 	private String name;
-	
+
 	private String author;
-	
+
 	private int numberOfPages;
 
 	public Book(String name, String author, int numberOfPages) {
@@ -20,7 +20,7 @@ public class Book {
 		this.author = author;
 		this.numberOfPages = numberOfPages;
 	}
-	
+
 	public Book() {
 		this.id = COUNTER.getAndIncrement();
 	}
@@ -32,7 +32,7 @@ public class Book {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public int getId() {
 		return id;
 	}

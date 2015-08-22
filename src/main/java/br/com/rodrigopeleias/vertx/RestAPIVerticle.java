@@ -2,11 +2,13 @@ package br.com.rodrigopeleias.vertx;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,10 +26,19 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	@Override
 	public void start(Future<Void> fut) throws Exception {
-
 		createSomeBooks();
 
 		Router router = Router.router(vertx);
+
+		router.route("/").handler(
+				routingContext -> {
+					HttpServerResponse response = routingContext.response();
+					response.putHeader("content-type", "text/html").end(
+							"<h1>Vertx application</h1>");
+				});
+
+		// Roteamento para a aplicação vertx servir conteúdo estático
+		router.route("/assets/*").handler(StaticHandler.create("assets"));
 
 		// RESTful API
 		router.get("/api/books").handler(this::getAll);
@@ -106,7 +117,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 			} else {
 				book.setName(json.getString("name"));
 				book.setAuthor(json.getString("author"));
-				book.setNumberOfPages(json.getInteger("numberOfPages"));
+				book.setNumberOfPages(Integer.parseInt(json.getString("numberOfPages")));
 				routingContext
 						.response()
 						.putHeader("content-type",

@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
 import com.jayway.restassured.RestAssured;
 
@@ -26,7 +25,7 @@ public class RestAPIVerticleTest {
 		RestAssured.reset();
 	}
 
-	@Test
+	// @Test
 	public void checkThatWeCanRetrieveIndividualProduct() {
 		final int id = get("/api/books").then().assertThat().statusCode(200)
 				.extract().jsonPath()
@@ -36,7 +35,7 @@ public class RestAPIVerticleTest {
 				.body("author", equalTo("Uncle Bob")).body("id", equalTo(id));
 	}
 
-	@Test
+	// @Test
 	public void checkWeCanAddAndDeleteAProduct() {
 		Book book = given()
 				.body("{\"name\":\"Clean Code\", \"origin\":\"Uncle Bob\", \"numberOfPages\":\"500\"}")
